@@ -1,0 +1,98 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: monitoring-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          # Working components
+          - name: metrics-server
+            chart: metrics-server
+            version: 3.12.2
+            repoURL: https://kubernetes-sigs.github.io/metrics-server/
+            namespace: kube-system
+            valueFile: |
+              {}
+          - name: grafana
+            chart: grafana
+            version: 8.2.0
+            repoURL: https://grafana.github.io/helm-charts
+            namespace: monitoring
+            valueFile: |
+              datasources:
+                datasources.yaml:
+                  apiVersion: 1
+                  datasources:
+                    - name: Prometheus
+                      type: prometheus
+                      url: http://prometheus-kube-prometheus-stack-prometheus.monitoring:9090
+                      access: proxy
+                      isDefault: true
+              dashboardProviders:
+                dashboardproviders.yaml:
+                  apiVersion: 1
+                  providers:
+                    - name: 'default'
+                      orgId: 1
+                      folder: ''
+                      type: file
+                      disableDeletion: false
+                      editable: true
+                      options:
+                        path: /var/lib/grafana/dashboards
+              dashboards:
+                default:
+                  kubernetes-cluster:
+                    gnetId: 7249
+                    revision: 1
+                    datasource: Prometheus
+            # Prometheus with special handling
+          - name: prometheus
+            chart: kube-prometheus-stack
+            version: 69.7.2
+            repoURL: https://prometheus-community.github.io/helm-charts
+            namespace: monitoring
+            valueFile: |
+              rbac:
+                create: true
+              serviceAccounts:
+                server:
+                  create: true
+              prometheusOperator:
+                admissionWebhooks:
+                  enabled: false
+                tls:
+                  enabled: false    # Disable TLS configuration
+                tlsProxy:
+                  enabled: false    # Disable TLS proxy
+              admissionWebhooks:
+                failurePolicy: Ignore  # Set failure policy to ignore
+                enabled: false
+
+  template:
+    metadata:
+      name: "{{name}}"
+    spec:
+      project: default
+      source:
+        repoURL: "{{repoURL}}"
+        targetRevision: "{{version}}"
+        chart: "{{chart}}"
+        helm:
+          values: "{{valueFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+          - PruneLast=true
+          - PrunePropagationPolicy=foreground
+          - SkipDryRunOnMissingResource=true
