@@ -1,8 +1,8 @@
-# AKS ArgoCD Setup
+# AKS ArgoCD Prometheus Grafana
 
 This repository contains Terraform configurations and Kubernetes manifests to set up an Azure Kubernetes Service (AKS) cluster with ArgoCD for GitOps-based deployments. It includes monitoring components including Prometheus and Grafana.
 
-- [AKS ArgoCD Setup](#aks-argocd-setup)
+- [AKS ArgoCD Prometheus Grafana](#aks-argocd-prometheus-grafana)
   - [Overview](#overview)
   - [Prerequisites](#prerequisites)
   - [Getting Started](#getting-started)
