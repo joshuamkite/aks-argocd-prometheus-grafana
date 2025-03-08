@@ -1,6 +1,6 @@
 # AKS ArgoCD Prometheus Grafana
 
-This repository contains Terraform configurations and Kubernetes manifests to set up an Azure Kubernetes Service (AKS) cluster with ArgoCD for GitOps-based deployments. It includes monitoring components including Prometheus and Grafana.
+This repository contains Terraform configurations and Kubernetes manifests to set up an Azure Kubernetes Service (AKS) cluster with ArgoCD for GitOps-based deployments. It includes monitoring components including Prometheus and Grafana. Additionally a hello-world nginx deployment is provided to demonstrate basic load balancing
 
 - [AKS ArgoCD Prometheus Grafana](#aks-argocd-prometheus-grafana)
   - [Overview](#overview)
@@ -19,11 +19,12 @@ This repository contains Terraform configurations and Kubernetes manifests to se
     - [ArgoCD Installation](#argocd-installation)
     - [Check nginx-hello-world service](#check-nginx-hello-world-service)
   - [Cleanup](#cleanup)
-    - [Delete load balanced service](#delete-load-balanced-service)
+    - [Delete nginx-hello-world service](#delete-nginx-hello-world-service)
     - [Delete ApplicationSet (optional)](#delete-applicationset-optional)
     - [Delete AKS Cluster](#delete-aks-cluster)
   - [Terraform Configuration](#terraform-configuration)
   - [ArgoCD ApplicationSet](#argocd-applicationset)
+  - [ArgoCD nginx-hello-world](#argocd-nginx-hello-world)
   - [Limitations](#limitations)
   - [References](#references)
   - [Requirements](#requirements)
@@ -43,6 +44,8 @@ This project provisions:
 3. Monitoring stack including:
    - Prometheus
    - Grafana with pre-configured dashboards
+  
+4. Additionally a hello-world nginx deployment is provided to demonstrate basic layer 4 load balancing 
 
 ## Prerequisites
 
@@ -181,11 +184,32 @@ curl http://<EXTERNAL-IP>
 
 ## Cleanup
 
-### Delete load balanced service
+### Delete nginx-hello-world service
 
+To properly delete ArgoCD-managed resources locally without touching Git repository or adding finalizers:
+
+1. Delete the ArgoCD Application:
 ```bash
-kubectl delete service nginx-hello-world-service
+kubectl delete application nginx-hello-world -n argocd
 ```
+
+1. Delete all the resources created by the deployment (long version):
+```bash
+kubectl delete deployment nginx-hello-world
+kubectl delete service nginx-hello-world-service
+kubectl delete configmap nginx-hello-world-config
+```
+
+Alternatively (short version), use the original YAML file to delete all resources at once:
+```bash
+kubectl delete -f hello-world/nginx-deployment.yaml
+```
+
+This sequence ensures that:
+1. ArgoCD stops managing (and auto-healing) the resources
+2. All the actual resources are properly removed from your cluster
+
+In a true GitOps workflow, we would normally remove resources by deleting them from the Git repository and letting ArgoCD sync the changes, but these commands provide a quick local cleanup when needed.
 
 ### Delete ApplicationSet (optional)
 
@@ -199,7 +223,6 @@ argocd appset delete monitoring-apps
 tofu destroy
 ```
 
-
 ## Terraform Configuration
 
 The Terraform configuration creates:
@@ -212,9 +235,14 @@ The Terraform configuration creates:
 ## ArgoCD ApplicationSet
 
 The ApplicationSet deploys:
-- Metrics Server for basic cluster metrics
+
 - Prometheus for comprehensive monitoring
 - Grafana for visualization with pre-configured dashboards
+
+
+## ArgoCD nginx-hello-world
+
+A hello-world nginx deployment is provided to demonstrate basic load balancing
 
 ## Limitations
 
