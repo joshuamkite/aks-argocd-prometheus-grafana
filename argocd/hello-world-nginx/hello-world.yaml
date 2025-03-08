@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: "https://github.com/joshuamkite/aks-argocd-prometheus-grafana.git"
-    path: argocd/hello-world-nginx
+    path: hello-world/nginx-deployment.yaml
     targetRevision: feature/monitoring-stack # branch, tag, commit, or HEAD
   destination:
     server: "https://kubernetes.default.svc"
