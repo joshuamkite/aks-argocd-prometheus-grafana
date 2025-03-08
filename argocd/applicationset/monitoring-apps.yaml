@@ -7,14 +7,6 @@ spec:
   generators:
     - list:
         elements:
-          # Working components
-          - name: metrics-server
-            chart: metrics-server
-            version: 3.12.2
-            repoURL: https://kubernetes-sigs.github.io/metrics-server/
-            namespace: kube-system
-            valueFile: |
-              {}
           - name: grafana
             chart: grafana
             version: 8.2.0
