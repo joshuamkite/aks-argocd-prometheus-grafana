@@ -14,7 +14,9 @@ This repository contains Terraform configurations and Kubernetes manifests to se
   - [Accessing Monitoring Tools](#accessing-monitoring-tools)
     - [Prometheus](#prometheus)
     - [Grafana](#grafana)
+  - [Hello World Nginx](#hello-world-nginx)
   - [Cleanup](#cleanup)
+    - [Delete load balanced service](#delete-load-balanced-service)
     - [Delete ApplicationSet (optional)](#delete-applicationset-optional)
     - [Delete AKS Cluster](#delete-aks-cluster)
   - [Terraform Configuration](#terraform-configuration)
@@ -36,7 +38,6 @@ This project provisions:
 1. An AKS cluster in Azure using Terraform using official Azure module
 2. ArgoCD for GitOps-based deployments
 3. Monitoring stack including:
-   - Metrics Server
    - Prometheus
    - Grafana with pre-configured dashboards
 
@@ -108,9 +109,10 @@ kubectl apply -f argocd/applicationset/monitoring-apps.yaml
 ```
 
 This will deploy:
-- Metrics Server
 - Prometheus (kube-prometheus-stack)
 - Grafana with pre-configured Prometheus datasource and Kubernetes dashboard
+  
+Metrics server is already deployed by defualt on AKS
 
 ## Accessing Monitoring Tools
 
@@ -142,7 +144,33 @@ kubectl port-forward service/prometheus-grafana 3000:80 --namespace monitoring
 
 Access Grafana at: http://127.0.0.1:3000 (Username: `admin`)
 
+## Hello World Nginx
+
+This deploys a simple Nginx server with a custom "Hello World" HTML page, exposed via an Azure LoadBalancer.
+
+
+```bash
+# Apply the deployment, service, and configmap
+kubectl apply -f hello-world/nginx-deployment.yaml
+
+# Check deployment status
+kubectl get deployment nginx-hello-world
+
+# Wait for the load balancer's external IP to be assigned
+kubectl get service nginx-hello-world-service
+
+# Access the application via the external IP
+# (Replace <EXTERNAL-IP> with the actual IP from the service)
+curl http://<EXTERNAL-IP>
+```
+
 ## Cleanup
+
+### Delete load balanced service
+
+```bash
+kubectl delete service nginx-hello-world-service
+```
 
 ### Delete ApplicationSet (optional)
 
