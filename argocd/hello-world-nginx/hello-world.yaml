@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: "https://github.com/joshuamkite/aks-argocd-prometheus-grafana.git"
     path: hello-world
-    targetRevision: feature/monitoring-stack # branch, tag, commit, or HEAD
+    targetRevision: HEAD
   destination:
     server: "https://kubernetes.default.svc"
     namespace: default

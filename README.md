@@ -15,6 +15,9 @@ This repository contains Terraform configurations and Kubernetes manifests to se
     - [Prometheus](#prometheus)
     - [Grafana](#grafana)
   - [Hello World Nginx](#hello-world-nginx)
+    - [Direct Installation (fallback, without ArgoCD)](#direct-installation-fallback-without-argocd)
+    - [ArgoCD Installation](#argocd-installation)
+    - [Check nginx-hello-world service](#check-nginx-hello-world-service)
   - [Cleanup](#cleanup)
     - [Delete load balanced service](#delete-load-balanced-service)
     - [Delete ApplicationSet (optional)](#delete-applicationset-optional)
@@ -146,12 +149,24 @@ Access Grafana at: http://127.0.0.1:3000 (Username: `admin`)
 
 ## Hello World Nginx
 
-This deploys a simple Nginx server with a custom "Hello World" HTML page, exposed via an Azure LoadBalancer.
+This deploys a simple Nginx server with a custom "Hello World" HTML page, exposed via an Azure LoadBalancer. Can be installed with or without ArgoCD
 
+### Direct Installation (fallback, without ArgoCD)
 
 ```bash
 # Apply the deployment, service, and configmap
 kubectl apply -f hello-world/nginx-deployment.yaml
+```
+
+### ArgoCD Installation
+
+```bash
+kubectl apply -f argocd/hello-world-nginx/hello-world.yaml 
+```
+
+### Check nginx-hello-world service
+
+```bash
 
 # Check deployment status
 kubectl get deployment nginx-hello-world
